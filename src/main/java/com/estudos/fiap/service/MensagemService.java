@@ -11,5 +11,7 @@ public interface MensagemService {
     Mensagem obterMensagem(UUID id);
 
 
+    Mensagem atualizarMensagem(UUID id, Mensagem mensagemNova);
 
+    boolean removerMensagem(UUID id);
 }

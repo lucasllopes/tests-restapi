@@ -66,7 +66,4 @@ public class MensagemRepositoryTest {
         //Assert
         verify(mensagemRepository, times(1)).deleteById(id);
     }
-
-
-
 }

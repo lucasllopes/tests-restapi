@@ -14,6 +14,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 public class MensagemServiceTest {
 
@@ -29,18 +33,24 @@ public class MensagemServiceTest {
 
         //Arrange
         var mensagem = MensagemHelper.getMensagem();
-        Mockito.when(mensagemRepository.save(Mockito.any(Mensagem.class))).thenAnswer(i -> i.getArgument(0));
-
+        when(mensagemRepository.save(any(Mensagem.class)))
+                .thenAnswer(i -> {
+                    Mensagem m = i.getArgument(0);
+                    if (m.getId() == null) {
+                        m.setId(UUID.randomUUID());
+                    }
+                    return m;
+                });
         //Act
         var mensagemRegistrada = mensagemService.registrarMensagem(mensagem);
 
         //Assert
-        Assertions.assertThat(mensagemRegistrada).isNotNull()
+        assertThat(mensagemRegistrada).isNotNull()
                 .isInstanceOf(Mensagem.class);
 
-        Assertions.assertThat(mensagemRegistrada.getId()).isNotNull();
-        Assertions.assertThat(mensagemRegistrada.getUsuario()).isEqualTo(mensagem.getUsuario());
-        Assertions.assertThat(mensagemRegistrada.getConteudo()).isEqualTo(mensagem.getConteudo());
+        assertThat(mensagemRegistrada.getId()).isNotNull();
+        assertThat(mensagemRegistrada.getUsuario()).isEqualTo(mensagem.getUsuario());
+        assertThat(mensagemRegistrada.getConteudo()).isEqualTo(mensagem.getConteudo());
     }
 
     @Test
@@ -50,30 +60,58 @@ public class MensagemServiceTest {
         var mensagem = MensagemHelper.getMensagem();
         mensagem.setId(uuid);
 
-        Mockito.when(mensagemRepository.findById(Mockito.any(UUID.class))).thenReturn(Optional.of(mensagem));
+        when(mensagemRepository.findById(any(UUID.class))).thenReturn(Optional.of(mensagem));
 
         //Act
         var mensagemObtida = mensagemService.obterMensagem(uuid);
 
         //Assert
         Mockito.verify(mensagemRepository, Mockito.times(1)).findById(uuid);
-        Assertions.assertThat(mensagemObtida).isEqualTo(mensagem);
+        assertThat(mensagemObtida).isEqualTo(mensagem);
 
     }
 
     @Test
     void devePermitirObterMensagens(){
-        Assertions.fail();
+        fail();
     }
 
     @Test
     void devePermitirRemoverMensagem(){
-        Assertions.fail();
+
+        var uuid = UUID.randomUUID();
+        var mensagem = MensagemHelper.getMensagem();
+        mensagem.setId(uuid);
+
+        when(mensagemRepository.findById(uuid)).thenReturn(Optional.of(mensagem));
+
+        boolean mensagemRemovida = mensagemService.removerMensagem(uuid);
+
+        assertThat(mensagemRemovida).isTrue();
+        verify(mensagemRepository).delete(mensagem);
     }
 
     @Test
     void devePermitirModificarMensagem(){
-        Assertions.fail();
+
+        var id = UUID.randomUUID();
+        var mensagemAntiga = MensagemHelper.getMensagem();
+        mensagemAntiga.setId(id);
+
+        var mensagemNova = MensagemHelper.getMensagem();
+        mensagemNova.setConteudo("Novo Conteudo");
+
+        when(mensagemRepository.findById(any(UUID.class))).thenReturn(Optional.of(mensagemAntiga));
+        when(mensagemRepository.save(any(Mensagem.class))).thenAnswer(i -> i.getArgument(0));
+
+        var mensagemObtida = mensagemService.atualizarMensagem(id, mensagemNova);
+
+        assertThat(mensagemObtida).isInstanceOf(Mensagem.class).isNotNull();
+        assertThat(mensagemObtida.getId()).isEqualTo(mensagemAntiga.getId());
+        assertThat(mensagemObtida.getUsuario()).isEqualTo(mensagemNova.getUsuario());
+        assertThat(mensagemObtida.getConteudo()).isEqualTo(mensagemNova.getConteudo());
+        verify(mensagemRepository, times(1)).save(any(Mensagem.class));
+
     }
 }
 

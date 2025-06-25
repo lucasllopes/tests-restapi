@@ -18,12 +18,30 @@ public class MensagemServiceImpl implements MensagemService {
 
     @Override
     public Mensagem registrarMensagem(Mensagem mensagem) {
-        mensagem.setId(UUID.randomUUID());
         return mensagemRepository.save(mensagem);
     }
 
     @Override
     public Mensagem obterMensagem(UUID id) {
         return mensagemRepository.findById(id).orElseThrow(() -> new MensagemNotFoundException("Mensagem nao encontrada"));
+    }
+
+    @Override
+    public Mensagem atualizarMensagem(UUID id, Mensagem novaMensagem) {
+
+        Mensagem mensagemDb = mensagemRepository.findById(id)
+                .orElseThrow(() -> new MensagemNotFoundException("Mensagem não encontrada com ID: " + id));
+
+        mensagemDb.setConteudo(novaMensagem.getConteudo());
+        mensagemDb.setUsuario(novaMensagem.getUsuario());
+
+        return mensagemRepository.save(mensagemDb);
+    }
+
+    @Override
+    public boolean removerMensagem(UUID id){
+        var mensagem = obterMensagem(id);
+        mensagemRepository.delete(mensagem);
+        return true;
     }
 }
