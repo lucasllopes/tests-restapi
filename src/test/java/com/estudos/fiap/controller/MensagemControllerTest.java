@@ -121,10 +121,4 @@ public class MensagemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
-
-    @Test
-    void devePermitirRemoverMensagem(){
-        Assertions.fail();
-    }
-
 }

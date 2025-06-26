@@ -72,11 +72,6 @@ public class MensagemServiceTest {
     }
 
     @Test
-    void devePermitirObterMensagens(){
-        fail();
-    }
-
-    @Test
     void devePermitirRemoverMensagem(){
 
         var uuid = UUID.randomUUID();
